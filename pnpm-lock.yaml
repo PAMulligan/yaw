@@ -16,7 +16,7 @@ importers:
         version: 5.0.4
       '@webflow/designer-extension-typings':
         specifier: ^2.0.7
-        version: 2.0.7
+        version: 2.0.8
       '@xatom/wf-app-hot-reload':
         specifier: ^1.0.2
         version: 1.0.2
@@ -329,8 +329,8 @@ packages:
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
-  '@webflow/designer-extension-typings@2.0.7':
-    resolution: {integrity: sha512-WuwJDHfjavkIfYOXzbYXLh31gKwLFHgItImQsNaSnmUwGB6gu1hY1fRVkStA/+kltLh5O4i/b/xUjH7wdr6pmA==}
+  '@webflow/designer-extension-typings@2.0.8':
+    resolution: {integrity: sha512-EN4QyhFx0ny1wODjnazpV8b8jBeJUaDCAuiklik+MwpUghTbhT+6Dh/AV49K07jRLtbxarj3Mvrag3lTkk7t/g==}
 
   '@xatom/wf-app-hot-reload@1.0.2':
     resolution: {integrity: sha512-JBLXEhoU3cw/WxsovSexdiJ8+z2vm44gldnioGx93R0dsnUbKEM2b4M2GaxdcTnLSkCpm/UkvglMI9KH5v11xQ==}
@@ -797,7 +797,7 @@ snapshots:
 
   '@types/estree@1.0.6': {}
 
-  '@webflow/designer-extension-typings@2.0.7': {}
+  '@webflow/designer-extension-typings@2.0.8': {}
 
   '@xatom/wf-app-hot-reload@1.0.2': {}
 
