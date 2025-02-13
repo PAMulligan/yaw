@@ -1,101 +1,160 @@
 <script lang="ts">
-  import { exampleFunction } from "common";
-  import {
-    type ExampleOneRoute,
-    type ExampleTwoRoute,
-  } from "../../server/src/index";
-  import { hc } from "hono/client";
-  import Counter from "./lib/Counter.svelte";
+  import Pass from './assets/Pass.svelte';
+  import Fail from './assets/Fail.svelte';
+  webflow.setExtensionSize('large');
+  let passes = 0;
+  let improvements = 0;
+  let keyphrase = "";
+  const targetContent = document.getElementById("content-target");
+  let kitDecider = Pass;
+  let kimdDecider = Pass;
 
-  // Put your server address here
-  const localServerAddress = `https://ai-alt-51.localcan.dev`;
+  function searchForKeyphrase(event: SubmitEvent) {
+      event.preventDefault();
+      let contentBoxes = document.getElementsByClassName("invisible");
+      Array.from(contentBoxes).forEach(box => {
+          box.classList.remove("invisible");
+          box.classList.add("visible")
+      })
+      passes = 0;
+      improvements = 0;
+      webflow.getCurrentPage().then(value => {
+          // Keyphrase in title
+          value.getTitle().then(value => {
+              const kitParagraph = document.getElementById('keyphrase-in-title-paragraph');
+              if (value && value.toLowerCase().includes(keyphrase.toLowerCase())) {
+                  kitDecider = Pass;
+                  if (kitParagraph) {
+                      kitParagraph.innerHTML = 'Congratulations! The title for this page containes your target keyphrase.';
+                  }
+                  passes++;
+              } else {
+                  kitDecider = Fail;
+                  if (kitParagraph) {
+                      kitParagraph.innerHTML = 'Try adding your keyphrase to the title in the page settings.';
+                  }
+                  improvements++;
+              }
+          })
 
-  /**
-   * Initialize the typesafe client
-   * http://localhost:8787 is the server address, but we need https for webflow
-   * I'm using a Local Can to proxy to a secure connection
-   * https://www.localcan.com/?aff=9g86n
-   */
-  const client = hc<ExampleOneRoute & ExampleTwoRoute>(localServerAddress);
-
-  // Example function coming from the common package
-  const test = exampleFunction();
-  console.log("Common package message");
-  console.log({ test });
-
-  // Example function in the client package
-  function notify() {
-    webflow.notify({
-      type: "Info",
-      message: "Hello from the client package",
-    });
-  }
-
-  // Example call to the server
-  async function pingExampleRouteOne() {
-    console.log(`Pinging example route one`);
-    try {
-      const response = await client.exampleOne.$get({
-        query: {
-          name: "Web Bae",
-        },
-      });
-      const data = await response.json();
-      webflow.notify({
-        type: "Success",
-        message: data.message,
-      });
-    } catch (e) {
-      const error = e as Error;
-      webflow.notify({
-        type: "Error",
-        message: error.message,
-      });
-      console.error(error);
-    }
-  }
-
-  async function pingExampleTwoRoute() {
-    try {
-      const response = await client.exampleTwo[":id"].$get({
-        param: {
-          id: "123",
-        },
-      });
-      const data = await response.json();
-      webflow.notify({
-        type: "Success",
-        message: data.message,
-      });
-    } catch (e) {
-      const error = e as Error;
-      webflow.notify({
-        type: "Error",
-        message: error.message,
-      });
-      console.error(error);
-    }
+          // Keyphrase in meta description
+          value.getDescription().then(value => {
+              const kimdParagraph = document.getElementById('keyphrase-in-meta-description-paragraph');
+              if (value && value.toLowerCase().includes(keyphrase.toLowerCase())) {
+                  kimdDecider = Pass;                   
+                  if (kimdParagraph) {
+                      kimdParagraph.innerHTML = 'Great work! The meta description for this page contains your target keyphrase.';
+                  }
+                  passes++;
+              } else {
+                  kimdDecider = Fail;
+                  if (kimdParagraph) {
+                      kimdParagraph.innerHTML = 'Try including your keyphrase in the meta description for this page.';
+                  }
+                  improvements++;
+              }
+          })
+      })
   }
 </script>
-
-<main>
-  <p>Client package</p>
-
-  <p>Open the console to see the message from the common package</p>
-  <p>{test.message}</p>
-
-  <div class="button-wrap">
-    <button on:click={notify}> Send notification </button>
-    <button on:click={pingExampleRouteOne}> Ping Example Route One </button>
-    <button on:click={pingExampleTwoRoute}> Ping Example Route Two </button>
-    <Counter />
+<div id="root">
+  <div class="min-h-screen bg-background p-4 md:p-6" style="opacity: 1;">
+      <div class="mx-auto w-full max-w-3xl space-y-6">
+          <div class="w-full" style="opacity: 1; transform: none;">
+              <div class="rounded-lg border bg-card text-card-foreground shadow-sm w-full">
+                  <div class="flex flex-col space-y-1.5 p-6"><h3 class="text-2xl font-semibold leading-none tracking-tight">SEO Analysis Tool</h3></div>
+                  <div class="p-6 pt-0">
+                      <form class="space-y-5" on:submit={searchForKeyphrase}>
+                          <div class="space-y-2 w-full">
+                              <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for=":r1:-form-item">Target keyphrase</label>
+                              <div class="w-full" id=":r1:-form-item" aria-describedby=":r1:-form-item-description" aria-invalid="false" style="transform: none;">
+                                  <input
+                                      class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full"
+                                      placeholder="Enter your target keyphrase"
+                                      name="keyphrase"
+                                      bind:value={keyphrase}
+                                  />
+                              </div>
+                          </div>
+                          <div class="w-full pt-2" style="transform: none;">
+                              <button
+                                  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 w-full h-11"
+                                  type="submit"
+                              >
+                                  Analyze SEO
+                              </button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
+          <div class="w-full" style="opacity: 1; transform: none;">
+          <div class="rounded-lg border bg-card text-card-foreground shadow-sm w-full">
+              <div class="flex flex-col space-y-1.5 p-6">
+                  <h3 class="text-2xl font-semibold leading-none tracking-tight">Analysis Results</h3>
+                  <div class="text-sm text-muted-foreground" style="transform: none;">{passes} passes ✅ • {improvements} improvements needed ❌</div>
+              </div>
+              <div class="p-6 pt-0">
+                  <div dir="ltr" class="relative overflow-hidden h-[600px] pr-4 w-full" style="position: relative; --radix-scroll-area-corner-width: 0px; --radix-scroll-area-corner-height: 0px;">
+                      <style>
+                          [data-radix-scroll-area-viewport] {
+                              scrollbar-width: none;
+                              -ms-overflow-style: none;
+                              -webkit-overflow-scrolling: touch;
+                          }
+                          [data-radix-scroll-area-viewport]::-webkit-scrollbar {
+                              display: none;
+                          }
+                          :where([data-radix-scroll-area-viewport]) {
+                              display: flex;
+                              flex-direction: column;
+                              align-items: stretch;
+                          }
+                          :where([data-radix-scroll-area-content]) {
+                              flex-grow: 1;
+                          }
+                      </style>
+                      <div data-radix-scroll-area-viewport="" class="h-full w-full rounded-[inherit]" style="overflow: hidden scroll;">
+                          <div data-radix-scroll-area-content="">
+                              <div class="invisible border p-4 w-full" style="opacity: 1; transform: none;">
+                                  <div class="flex items-start justify-between w-full">
+                                      <div class="space-y-2 flex-1">
+                                          <div class="font-medium flex items-center gap-2" style="opacity: 1;">
+                                              <svelte:component this={kitDecider} />
+                                              Keyphrase in Title
+                                          </div>
+                                          <p id="keyphrase-in-title-paragraph" class="text-sm text-muted-foreground"></p>
+                                      </div>
+                                  </div>
+                              </div>
+                              <div class="invisible border p-4 w-full" style="opacity: 1; transform: none;">
+                                  <div class="flex items-start justify-between w-full">
+                                      <div class="space-y-2 flex-1">
+                                          <div class="font-medium flex items-center gap-2" style="opacity: 1;">
+                                              <svelte:component this={kimdDecider} />
+                                              Keyphrase in Meta Description
+                                          </div>
+                                          <p id="keyphrase-in-meta-description-paragraph" class="text-sm text-muted-foreground"></p>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>        
+      </div>
   </div>
-</main>
-
+  <div role="region" aria-label="Notifications (F8)" tabindex="-1" style="pointer-events: none;">
+      <ol tabindex="-1" class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"></ol>
+  </div>
+</div>
 <style>
-  .button-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  .invisible {
+      display: none;
+  }
+  .visible {
+      display: block;
   }
 </style>
