@@ -1,7 +1,7 @@
 {
   "name": "YAW",
   "version": "1.0.0",
-  "description": "Yoast-like Analysis for Webflow",
+  "description": "Yoast Analogue for Webflow",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -k \"pnpm --filter common dev\" \"pnpm --filter client dev\"",
