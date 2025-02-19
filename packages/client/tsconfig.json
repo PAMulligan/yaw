@@ -14,7 +14,8 @@
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,
-    "typeRoots": ["./node_modules/@types", "./node_modules/@webflow"]
+    "typeRoots": ["./node_modules/@types", "./node_modules/@webflow"],
+    "strict": true, //This is necessary for Hono/client to work
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
   "references": [{ "path": "./tsconfig.node.json" }]

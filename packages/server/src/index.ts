@@ -1,57 +1,45 @@
 // server
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
-import { exampleFunction } from "common";
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '../.dev.vars' });
 
-type Bindings = {
-  [key in keyof CloudflareBindings]: CloudflareBindings[key];
-};
+const { string: stgSubmitUrl, string: stgCheckStatusUrl, string: stgSecret } = process.env;
 
-const app = new Hono<{ Bindings: Bindings }>();
+export async function stgSubmit<T>(keyphrase: string) {
+    if (stgSubmitUrl && stgSecret) {
+        const response = await fetch(stgSubmitUrl, {
+                method: 'POST',
+                body: JSON.stringify({ content: keyphrase }),
+                headers: {
+                    'apy-token': stgSecret,
+                    'Content-Type': 'application/json'
+                },
+                mode: 'cors'
+            }
+        )
 
-app.use("*", cors());
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
 
-app.get("/", (c) => {
-  const obj = exampleFunction();
-  return c.json(obj);
-});
+        return await response.json() as T;
+    };
+}
 
-// Define route handlers
-const exampleRouteOne = app.get(
-  "/exampleOne",
-  zValidator(
-    "query",
-    z.object({
-      name: z.string(),
-    })
-  ),
-  (c) => {
-    const { name } = c.req.valid("query");
-    return c.json({
-      message: `Hello! ${name}`,
-    });
-  }
-);
+export async function stgCheckStatus<T>(jobId: string) {
+    if (stgCheckStatusUrl && jobId && stgSecret) {
+        const response = await fetch(stgCheckStatusUrl + jobId, {
+            method: 'GET',
+            headers: {
+                'apy-token': stgSecret,
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors'
+        })
 
-const exampleRouteTwo = app.get(
-  "/exampleTwo/:id",
-  zValidator(
-    "param",
-    z.object({
-      id: z.string(),
-    })
-  ),
-  (c) => {
-    const { id } = c.req.valid("param");
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
 
-    return c.json({
-      message: `You requested the id: ${id}`,
-    });
-  }
-);
-
-export default app;
-export type ExampleOneRoute = typeof exampleRouteOne;
-export type ExampleTwoRoute = typeof exampleRouteTwo;
+        return await response.json() as T;
+    }
+}
