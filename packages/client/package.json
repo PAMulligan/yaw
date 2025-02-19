@@ -1,5 +1,5 @@
 {
-  "name": "YAW",
+  "name": "client",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "common": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
