@@ -1,61 +1,101 @@
 <script lang="ts">
-  import Pass from './assets/Pass.svelte';
-  import Fail from './assets/Fail.svelte';
-  webflow.setExtensionSize('large');
-  let passes = 0;
-  let improvements = 0;
-  let keyphrase = "";
-  const targetContent = document.getElementById("content-target");
-  let kitDecider = Pass;
-  let kimdDecider = Pass;
+    import Pass from './assets/Pass.svelte';
+    import Fail from './assets/Fail.svelte';
+    import { stgSubmit, stgCheckStatus } from '../../server/src/index';
+    webflow.setExtensionSize('large');
+    const stgApiSecret = import.meta.env.VITE_SEO_TAGS_GENERATOR_SECRET;
+    let passes = 0;
+    let improvements = 0;
+    let keyphrase = "";
+    let kitDecider = Pass;
+    let kimdDecider = Pass;
+    let stgJobId = '';
 
-  function searchForKeyphrase(event: SubmitEvent) {
-      event.preventDefault();
-      let contentBoxes = document.getElementsByClassName("invisible");
-      Array.from(contentBoxes).forEach(box => {
-          box.classList.remove("invisible");
-          box.classList.add("visible")
-      })
-      passes = 0;
-      improvements = 0;
-      webflow.getCurrentPage().then(value => {
-          // Keyphrase in title
-          value.getTitle().then(value => {
-              const kitParagraph = document.getElementById('keyphrase-in-title-paragraph');
-              if (value && value.toLowerCase().includes(keyphrase.toLowerCase())) {
-                  kitDecider = Pass;
-                  if (kitParagraph) {
-                      kitParagraph.innerHTML = 'Congratulations! The title for this page containes your target keyphrase.';
-                  }
-                  passes++;
-              } else {
-                  kitDecider = Fail;
-                  if (kitParagraph) {
-                      kitParagraph.innerHTML = 'Try adding your keyphrase to the title in the page settings.';
-                  }
-                  improvements++;
-              }
-          })
+    function searchForKeyphrase(event: SubmitEvent) {
+        event.preventDefault();
+        passes = 0;
+        improvements = 0;
+        let contentBoxes = document.getElementsByClassName("invisible");
+        Array.from(contentBoxes).forEach(box => {
+            box.classList.remove("invisible");
+            box.classList.add("visible")
+        })
+        passes = 0;
+        improvements = 0;
+        webflow.getCurrentPage().then(value => {
+            // Keyphrase in title
+            value.getTitle().then(value => {
+                const kitParagraph = document.getElementById('keyphrase-in-title-paragraph');
+                if (value && value.toLowerCase().includes(keyphrase.toLowerCase())) {
+                    kitDecider = Pass;
+                    if (kitParagraph) {
+                        kitParagraph.innerHTML = 'Congratulations! The title for this page contains your target keyphrase.';
+                    }
+                    passes++;
+                } else {
+                    kitDecider = Fail;
+                    postStgSubmit(keyphrase)
+                    .then(value => {
+                        if (value) {
+                            console.log(value);
+                        }
+                    })
+                    // .finally(value => {
+                    //                 status = value.data.attributes.status.toString();
+                    //                 console.log(`Line 83 ${status}`);
+                    //                 if (kitParagraph) {
+                    //                     kitParagraph.innerHTML = `Try using this for the title: ${value.data.attributes.result.meta_tags.title}`;
+                    //                 }
+                    //             })
 
-          // Keyphrase in meta description
-          value.getDescription().then(value => {
-              const kimdParagraph = document.getElementById('keyphrase-in-meta-description-paragraph');
-              if (value && value.toLowerCase().includes(keyphrase.toLowerCase())) {
-                  kimdDecider = Pass;                   
-                  if (kimdParagraph) {
-                      kimdParagraph.innerHTML = 'Great work! The meta description for this page contains your target keyphrase.';
-                  }
-                  passes++;
-              } else {
-                  kimdDecider = Fail;
-                  if (kimdParagraph) {
-                      kimdParagraph.innerHTML = 'Try including your keyphrase in the meta description for this page.';
-                  }
-                  improvements++;
-              }
-          })
-      })
-  }
+                    //             if (status !== 'success') {
+                    //                 retries++;
+                    //                 await new Promise(resolve => setTimeout(resolve, 2000));
+                    //             }
+                    //         } catch (error) {
+                    //             console.error("Error checking job status:", error);
+                    //             retries++;
+                    //             await new Promise(resolve => setTimeout(resolve, 2000));
+                    //         }
+
+                    //         if (status === 'success') {
+                    //             return 'success';
+                    //         } else {
+                    //             return 'failed';
+                    //         }
+                    //     }
+                    // }
+                    // improvements++;
+                }
+            })
+
+            // Keyphrase in meta description
+            value.getDescription().then(value => {
+                const kimdParagraph = document.getElementById('keyphrase-in-meta-description-paragraph');
+                if (value && value.toLowerCase().includes(keyphrase.toLowerCase())) {
+                    kimdDecider = Pass;                   
+                    if (kimdParagraph) {
+                        kimdParagraph.innerHTML = 'Great work! The meta description for this page contains your target keyphrase.';
+                    }
+                    passes++;
+                } else {
+                    kimdDecider = Fail;
+                    if (kimdParagraph) {
+                        kimdParagraph.innerHTML = 'Try including your keyphrase in the meta description for this page.';
+                    }
+                    improvements++;
+                }
+            })
+        })
+    }
+
+    async function postStgSubmit(string: string) {
+        return await stgSubmit(string);
+    }
+
+    async function getStgStatus(string: string) {
+        return await stgCheckStatus(string);
+    }
 </script>
 <div id="root">
   <div class="min-h-screen bg-background p-4 md:p-6" style="opacity: 1;">
